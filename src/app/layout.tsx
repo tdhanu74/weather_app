@@ -16,7 +16,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
+      <body className="h-screen w-screen" style={{
+            backgroundImage: `url("https://4kwallpapers.com/images/wallpapers/waves-macos-big-sur-colorful-5k-1920x1200-4992.jpg")`,
+            height: "100vh",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+        }}>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>

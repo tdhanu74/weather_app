@@ -1,17 +1,13 @@
-import Link from "next/link";
+import { HydrateClient } from "~/trpc/server";
+import WeatherApp from "./_components/weather-app";
 
-import { LatestPost } from "~/app/_components/post";
-import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-
-  void api.post.getLatest.prefetch();
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+      <main className="flex h-screen w-full items-center justify-between px-16 py-14 shadow-lg">
+        {/* <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
@@ -46,6 +42,9 @@ export default async function Home() {
           </div>
 
           <LatestPost />
+        </div> */}
+        <div className="flex flex-row sm:rounded-[1rem] md:rounded-[2rem] lg:rounded-[2rem] w-full h-full overflow-y-auto bg-white-glass-2 backdrop-blur-xl shadow-lg">
+          <WeatherApp />
         </div>
       </main>
     </HydrateClient>
