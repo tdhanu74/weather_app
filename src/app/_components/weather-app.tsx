@@ -211,16 +211,16 @@ const WeatherApp = () => {
             default:
               console.error("Geolocation error:", error.message);
           }
-          fetch("http://ip-api.com/json")
+          fetch("https://ipapi.co/json")
             .then((res) => res.json())
-            .then((data: { lat: number; lon: number }) => {
+            .then((data: { latitude: number; longitude: number }) => {
               if (
                 data &&
-                typeof data.lat === "number" &&
-                typeof data.lon === "number"
+                typeof data.latitude === "number" &&
+                typeof data.longitude === "number"
               ) {
                 fetchWeatherData(
-                  { latitude: data.lat, longitude: data.lon },
+                  { latitude: data.latitude, longitude: data.longitude },
                   unit,
                   setWeekWeather,
                   setCurrentWeather,

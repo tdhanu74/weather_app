@@ -31,7 +31,7 @@ export default function Sidebar({ data }: Readonly<SidebarProps>) {
           className="bg-transparent px-3 py-2 text-lg outline-none"
         />
         <div className="flex w-16 cursor-pointer items-center rounded-full bg-white-glass-2 p-2 shadow transition duration-500 ease-in-out hover:scale-110 active:bg-black-glass-2">
-          <Image src="/icons/location.svg" alt="Location" width={24} height={24} />
+          <Image src="/icons/location.svg" alt="Location" className="w-12" width={24} height={24} />
         </div>
       </div>
       <div className="self-center">
