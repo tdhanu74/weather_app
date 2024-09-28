@@ -2,45 +2,140 @@
 import Sidebar from "./sidebar";
 import * as Tabs from "@radix-ui/react-tabs";
 import WeekWeather from "./week-weather";
+import TodayWeather from "./today-weather";
 import React, { useEffect, useState } from "react";
 import { fetchWeatherApi } from "openmeteo";
 
+const stringMap = {
+  0: "Clear sky",
+  1: "Mainly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Fog",
+  48: "Depositing rime fog",
+  51: "Light drizzle",
+  53: "Moderate drizzle",
+  55: "Dense drizzle",
+  56: "Light freezing drizzle",
+  57: "Dense freezing drizzle",
+  61: "Slight rain",
+  63: "Moderate rain",
+  66: "Heavy rain",
+  67: "Heavy rain",
+  71: "Slight snow",
+  73: "Moderate snow",
+  75: "Heavy snow",
+  77: "Dense snow",
+  80: "Slight rain showers",
+  81: "Moderate rain showers",
+  82: "Heavy rain showers",
+  85: "Slight snow showers",
+  86: "Heavy snow showers",
+  95: "Thunderstorm",
+  96: "Thunderstorm with slight hail",
+  99: "Thunderstorm with heavy hail",
+};
+
+
+const iconMap = {
+  0: (isDay: boolean) => isDay ? "/icons/clear-day.svg" : "/icons/clear-night.svg",
+  1: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day.svg" : "/icons/partly-cloudy-night.svg",
+  2: () => "/icons/cloudy.svg",
+  3: () => "/icons/rain.svg",
+  45: () => "/icons/fog.svg",
+  48: () => "/icons/fog.svg",
+  51: () => "/icons/drizzle.svg",
+  53: () => "/icons/drizzle.svg",
+  55: () => "/icons/rain.svg",
+  56: () => "/icons/rain.svg",
+  57: () => "/icons/rain.svg",
+  61: () => "/icons/drizzle.svg",
+  63: () => "/icons/rain.svg",
+  66: () => "/icons/rain.svg",
+  67: () => "/icons/rain.svg",
+  71: () => "/icons/snow.svg",
+  73: () => "/icons/snow.svg",
+  75: () => "/icons/snow.svg",
+  77: () => "/icons/snow.svg",
+  80: () => "/icons/drizzle.svg",
+  81: () => "/icons/rain.svg",
+  82: () => "/icons/rain.svg",
+  85: () => "/icons/snow.svg",
+  86: () => "/icons/snow.svg",
+  95: () => "/icons/thunderstorms.svg",
+  96: () => "/icons/thunderstorms.svg",
+  99: () => "/icons/thunderstorms.svg",
+};
+
+const getIcon = (weatherCode: number | undefined, isDay = true) => {
+  return iconMap[weatherCode as keyof typeof iconMap]?.(isDay) || "/icons/default.svg";
+};
+
+const getString = (weatherCode: number | undefined) => {
+  return stringMap[weatherCode as keyof typeof stringMap] || "Unknown weather";
+};
+
 // Add this type definition
-type CurrentWeather = {
+type ICurrentWeather = {
   day: string;
   time: string;
-  temperature2m: string;
+  icon: string;
+  weatherString: string;
+  weatherCode: number;
   isDay: boolean;
+  temperature2m: string;
   precipitation: number;
   rain: number | undefined;
   showers: number | undefined;
   snowfall: number | undefined;
-  weatherCode: number | undefined;
   windSpeed10m: number | undefined;
   windDirection10m: number | undefined;
 };
 
+type ITodayWeather = {
+  windSpeed: number | undefined;
+  windDirection: number | undefined;
+  rain: number | undefined;
+  showers: number | undefined;
+  snowfall: number | undefined;
+  uvIndex: number | undefined;
+  humidity: number | undefined;
+  sunrise: number | undefined;
+  sunset: number | undefined;
+  precipitation: number | undefined;
+  precipitationProbability: number | undefined;
+};
+
 // Add this type definition at the top of the file, near the CurrentWeather type
-type WeekWeather = {
+type IWeekWeather = {
   day: string;
-  icon: number;
+  icon: string;
   minTemp: number;
   maxTemp: number;
 };
 
+type IHourlyWeather = {
+  time: string;
+  temperature2m: number;
+};
+
 const range = (start: number, stop: number, step: number) =>
+
   Array.from({ length: (stop - start) / step }, (_, i) => start + i * step);
 
 const fetchWeatherData = (
   location: { latitude: number; longitude: number },
   unit: string,
-  setWeekWeather: React.Dispatch<React.SetStateAction<WeekWeather[] | null>>,
+  setWeekWeather: React.Dispatch<React.SetStateAction<IWeekWeather[] | null>>,
   setCurrentWeather: React.Dispatch<
-    React.SetStateAction<CurrentWeather | null>
+      React.SetStateAction<ICurrentWeather | null>
   >,
+  setTodayWeather: React.Dispatch<React.SetStateAction<ITodayWeather | null>>,
+  setHourlyWeather: React.Dispatch<React.SetStateAction<IHourlyWeather[] | null>>,
 ) => {
   const params = {
     latitude: location.latitude,
+
     longitude: location.longitude,
     current: [
       "temperature_2m",
@@ -75,7 +170,6 @@ const fetchWeatherData = (
     ],
     temperature_unit: unit,
     wind_speed_unit: "ms",
-    timezone: "auto",
   };
   const url = "https://api.open-meteo.com/v1/forecast";
 
@@ -112,6 +206,8 @@ const fetchWeatherData = (
             minute: "2-digit",
             hour12: false,
           }),
+          icon: getWeatherIcon(current?.variables(1)?.value(), current?.variables(6)?.value()), 
+          weatherString: getString(current?.variables(6)?.value() ?? 0),
           temperature2m: current?.variables(0)?.value()?.toFixed(0) ?? "",
           isDay: current?.variables(1)?.value() ?? false,
           precipitation: current?.variables(2)?.value() ?? 0,
@@ -128,9 +224,9 @@ const fetchWeatherData = (
             Number(hourly?.timeEnd()),
             hourly?.interval() ?? 0,
           ).map((t) => new Date((t + (utcOffsetSeconds ?? 0)) * 1000)),
-          temperature2m: hourly?.variables(0)?.valuesArray(),
-          relativeHumidity2m: hourly?.variables(1)?.valuesArray(),
-          precipitationProbability: hourly?.variables(2)?.valuesArray(),
+          temperature2m: hourly?.variables(0)?.valuesArray() ?? [],
+          relativeHumidity2m: hourly?.variables(1)?.valuesArray() ?? [],
+          precipitationProbability: hourly?.variables(2)?.valuesArray() ?? [],
           precipitation: hourly?.variables(3)?.valuesArray(),
           rain: hourly?.variables(4)?.valuesArray(),
           showers: hourly?.variables(5)?.valuesArray(),
@@ -149,28 +245,61 @@ const fetchWeatherData = (
           temperature2mMax: daily?.variables(1)?.valuesArray() ?? [],
           temperature2mMin: daily?.variables(2)?.valuesArray() ?? [],
           sunrise: daily?.variables(3)?.valuesArray() ?? [],
-          sunset: daily?.variables(4)?.valuesArray(),
-          uvIndexMax: daily?.variables(5)?.valuesArray(),
+          sunset: daily?.variables(4)?.valuesArray() ?? [],
+          uvIndexMax: daily?.variables(5)?.valuesArray() ?? [],
         },
       };
 
+      console.log(weatherData)
+
+      const getDayName = (index: number, date: Date) => {
+        if (index === 0) return "Today";
+        if (index === 1) return "Tomorrow";
+        return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()];
+      };
+
       const weekWeather = weatherData.daily.time.map((date, i) => ({
-        day: [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ][date.getDay()],
-        icon: weatherData.daily.weatherCode[i],
+        day: getDayName(i, date),
+        icon: getIcon(weatherData.daily.weatherCode[i]),
         minTemp: weatherData.daily.temperature2mMin[i],
         maxTemp: weatherData.daily.temperature2mMax[i],
+        sunrise: weatherData.daily?.sunrise?.[i] ?? null,
+        sunset: weatherData.daily?.sunset?.[i] ?? null,
+        uvIndexMax: weatherData.daily?.uvIndexMax?.[i] ?? null,
       }));
 
-      setWeekWeather(weekWeather as WeekWeather[]);
-      setCurrentWeather(weatherData.current as CurrentWeather);
+
+      const todayWeather = {
+        windSpeed: weatherData.current.windSpeed10m,
+        windDirection: weatherData.current.windDirection10m,
+        rain: weatherData.current.rain,
+        showers: weatherData.current.showers,
+        snowfall: weatherData.current.snowfall,
+        sunrise: weatherData.daily.sunrise[0] ?? 0,
+        sunset: weatherData.daily.sunset[0] ?? 0,
+        uvIndex: weatherData.daily.uvIndexMax[0] ?? 0,
+      }
+
+
+      const currentTime = new Date();
+      const hourlyWeather = weatherData.hourly.time
+        .map((date, i) => ({
+          time: date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+          }),
+          temperature2m: weatherData.hourly.temperature2m[i] ?? 0,
+        }))
+        .filter((item, index) => {
+          const itemDate = weatherData.hourly.time[index];
+          if (itemDate) {
+            return itemDate >= currentTime && itemDate < new Date(currentTime.getTime() + 24 * 60 * 60 * 1000 * 2);
+          }
+          return false;
+        });
+      setWeekWeather(weekWeather as IWeekWeather[]);
+      setCurrentWeather(weatherData.current as ICurrentWeather);
+      setHourlyWeather(hourlyWeather as IHourlyWeather[]);
+      setTodayWeather(todayWeather as ITodayWeather);
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
@@ -181,12 +310,19 @@ const fetchWeatherData = (
   });
 };
 
+const getWeatherIcon = (isDay: number | undefined, weatherCode: number | undefined) => {
+  if (isDay === undefined) return getIcon(weatherCode ?? 0);
+  return getIcon(weatherCode ?? 0, isDay === 1);
+};
+
 const WeatherApp = () => {
   const [unit, setUnit] = useState<string>("celsius");
-  const [weekWeather, setWeekWeather] = useState<WeekWeather[] | null>(null);
-  const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(
+  const [weekWeather, setWeekWeather] = useState<IWeekWeather[] | null>(null);
+  const [currentWeather, setCurrentWeather] = useState<ICurrentWeather | null>(
     null,
   );
+  const [todayWeather, setTodayWeather] = useState<ITodayWeather | null>(null);
+  const [hourlyWeather, setHourlyWeather] = useState<IHourlyWeather[] | null>(null);
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -195,7 +331,7 @@ const WeatherApp = () => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           };
-          fetchWeatherData(location, unit, setWeekWeather, setCurrentWeather);
+            fetchWeatherData(location, unit, setWeekWeather, setCurrentWeather, setTodayWeather, setHourlyWeather);
         },
         (error) => {
           switch (error.code) {
@@ -224,8 +360,11 @@ const WeatherApp = () => {
                   unit,
                   setWeekWeather,
                   setCurrentWeather,
+                  setTodayWeather,
+                  setHourlyWeather,
                 );
               } else {
+
                 console.error("Invalid data from IP API");
               }
             })
@@ -240,7 +379,7 @@ const WeatherApp = () => {
   return (
     <>
       <Sidebar data={currentWeather!} />
-      <div className="py-18 h-full w-full overflow-y-auto py-14 py-16 sm:px-12 md:px-14 lg:px-16">
+      <div className="h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16">
         <div className="flex flex-col">
           <Tabs.Root defaultValue="today">
             <div className="flex flex-row justify-between">
@@ -282,10 +421,11 @@ const WeatherApp = () => {
               </Tabs.Root>
             </div>
             <Tabs.Content className="" value="today">
-              <div></div>
+              {todayWeather && hourlyWeather && <TodayWeather todayWeather={todayWeather} hourlyWeather={hourlyWeather} unit={unit} />}
             </Tabs.Content>
             <Tabs.Content className="" value="week">
-              {weekWeather && <WeekWeather data={weekWeather} />}
+
+              {weekWeather && <WeekWeather weekWeather={weekWeather} unit={unit}/>}
             </Tabs.Content>
           </Tabs.Root>
         </div>

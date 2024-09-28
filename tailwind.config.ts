@@ -22,6 +22,7 @@ export default {
         "black": "rgba(2, 2, 2, 1)",
         "black-glass": "rgba(2, 2, 2, 0.7)",
         "black-glass-2": "rgba(2, 2, 2, 0.2)",
+        "accent": "rgba(0, 139, 248, 1)"
       }
     },
   },

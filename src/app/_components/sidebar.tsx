@@ -7,8 +7,48 @@ interface SidebarProps {
     temperature2m: string;
     day: string;
     time: string;
+    weatherString: string;
+    weatherCode: number;
+    isDay: boolean;
+    icon: string;
   };
 }
+
+const iconMap = {
+  0: (isDay: boolean) => isDay ? "/icons/clear-day.svg" : "/icons/clear-night.svg",
+  1: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day.svg" : "/icons/partly-cloudy-night.svg",
+  2: (isDay: boolean) => isDay ? "/icons/overcast-day.svg" : "/icons/overcast-night.svg",
+  3: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  45: () => "/icons/fog.svg",
+  48: () => "/icons/fog.svg",
+  51: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  53: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  55: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  56: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  57: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  61: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  63: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  66: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  67: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  71: () => "/icons/snow.svg",
+  73: () => "/icons/snow.svg",
+  75: () => "/icons/snow.svg",
+  77: () => "/icons/snow.svg",
+  80: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  81: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  82: (isDay: boolean) => isDay ? "/icons/partly-cloudy-day-rain.svg" : "/icons/partly-cloudy-night-rain.svg",
+  85: () => "/icons/snow.svg",
+  86: () => "/icons/snow.svg",
+  95: (isDay: boolean) => isDay ? "/icons/thunderstorms-day.svg" : "/icons/thunderstorms-night.svg",
+  96: (isDay: boolean) => isDay ? "/icons/thunderstorms-day.svg" : "/icons/thunderstorms-night.svg",
+  99: (isDay: boolean) => isDay ? "/icons/thunderstorms-day.svg" : "/icons/thunderstorms-night.svg",
+
+};
+
+const getIcon = (weatherCode: number | undefined, isDay = true) => {
+  return iconMap[weatherCode as keyof typeof iconMap]?.(isDay) || "/icons/cloudy.svg";
+};
+
 
 export default function Sidebar({ data }: Readonly<SidebarProps>) {
   const [searchText, setSearchText] = useState<string>("Search for places...");
@@ -35,7 +75,7 @@ export default function Sidebar({ data }: Readonly<SidebarProps>) {
         </div>
       </div>
       <div className="self-center">
-        <Image src="/icons/haze-day.svg" alt="Haze Day" className="w-72" width={24} height={24} />
+        <Image src={getIcon(data?.weatherCode, data?.isDay)} alt="Haze Day" className="w-72" width={24} height={24} />
       </div>
       <div className="flex flex-row items-start py-4 font-roboto leading-none gap-2">
         <span className="text-[6rem] text-black">{data?.temperature2m}</span>
@@ -47,7 +87,13 @@ export default function Sidebar({ data }: Readonly<SidebarProps>) {
         <span className="text-2xl text-black">{data?.day},</span>
         <span className="text-2xl text-white">{data?.time}</span>
       </div>
-      <div className="pt-8"></div>
+      <div className="h-[1px] w-full bg-black-glass-2" />
+      <div className="flex flex-col pt-8 gap-4">
+        <div className="flex flex-row gap-2 items-center">
+          <span className="text-2xl text-black">{data?.weatherString}</span>
+          <Image src={data?.icon} alt="Wind" width={24} height={24} className="w-12" />
+        </div>
+      </div>
     </div>
   );
 }
