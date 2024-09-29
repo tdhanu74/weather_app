@@ -357,7 +357,7 @@ const WeatherApp = () => {
             .then(response => response.json())
             .then((data: { ip: string }) => {
               console.log('Your Public IP Address:', data.ip);
-              fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=444faae1a0c0442bb77a853241e3b4ca&ip=${data.ip}`)
+              fetch(`https://api.ip2location.io/?key=4E3A7670B309C1273FAEFA9D6AA40B92&ip=${data.ip}`)
               .then((res) => res.json())
               .then((data: { latitude: number; longitude: number }) => {
                 if (
