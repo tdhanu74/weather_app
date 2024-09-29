@@ -355,7 +355,7 @@ const WeatherApp = () => {
           }
           fetch('https://api.ipify.org?format=json')
             .then(response => response.json())
-            .then(data => {
+            .then((data: { ip: string }) => {
               console.log('Your Public IP Address:', data.ip);
               fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=444faae1a0c0442bb77a853241e3b4ca&ip=${data.ip}`)
               .then((res) => res.json())
