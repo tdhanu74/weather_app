@@ -16,12 +16,12 @@ export default function WeatherCard({
   unit,
 }: Readonly<WeatherCardProps>) {
   return (
-    <div className="flex h-full w-full flex-row items-center justify-between overflow-hidden rounded-xl bg-transparent shadow backdrop-blur-md sm:p-3 md:p-5 lg:p-6">
+    <div className="flex h-full w-full flex-row items-center justify-between overflow-hidden rounded-xl bg-transparent shadow backdrop-blur-md p-3">
       <div className="flex flex-row items-center gap-4">
-        <div className="md:text-md text-black sm:text-sm lg:text-lg">{day}</div>
+        <div className="pl-8 text-black text-xl font-bold">{day}</div>
       </div>
       <div className="flex flex-row items-center gap-4">
-        <div className="flex flex-col">
+        <div className="flex flex-col text-lg font-semibold">
           <div className="font-roboto text-black">
             {maxTemp}&deg;{unit == "celsius" ? "C" : "F"}
           </div>

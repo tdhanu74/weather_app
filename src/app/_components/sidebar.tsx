@@ -12,6 +12,7 @@ interface SidebarProps {
     isDay: boolean;
     icon: string;
   };
+  loading: boolean;
 }
 
 const iconMap = {
@@ -50,11 +51,11 @@ const getIcon = (weatherCode: number | undefined, isDay = true) => {
 };
 
 
-export default function Sidebar({ data }: Readonly<SidebarProps>) {
-  const [searchText, setSearchText] = useState<string>("Search for places...");
+export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
+  // const [searchText, setSearchText] = useState<string>("Search for places...");
   return (
-    <div className="py-18 flex h-full flex-col py-14 py-16 pl-12 pl-14 pl-16 sm:w-6/12 md:w-5/12 lg:w-4/12">
-      <div className="flex w-full flex-row items-center">
+    <div className="flex h-full flex-col py-16 pl-16 sm:w-6/12 md:w-5/12 lg:w-4/12">
+      {/* <div className="flex w-full flex-row items-center">
         <Image src="/icons/search.svg" alt="Search" width={24} height={24} />
         <input
           type="text"
@@ -73,26 +74,52 @@ export default function Sidebar({ data }: Readonly<SidebarProps>) {
         <div className="flex cursor-pointer items-center rounded-full bg-white-glass-2 p-2 shadow transition duration-500 ease-in-out hover:scale-110 active:bg-black-glass-2">
           <Image src="/icons/location.svg" alt="Location" width={24} height={24} />
         </div>
-      </div>
-      <div className="self-center">
-        <Image src={getIcon(data?.weatherCode, data?.isDay)} alt="Haze Day" className="w-72" width={24} height={24} />
+      </div> */}
+      <div className={loading ? "self-start w-full" : "self-center"}>
+        {
+          loading ?
+            <div className="rounded-lg shadow w-full h-72 bg-transparent backdrop-blur-md animate-pulse"/>
+          :<Image 
+            src={getIcon(data?.weatherCode, data?.isDay)} 
+            alt="Haze Day" 
+            className="w-72" 
+            width={24} 
+            height={24} 
+          />
+        }
       </div>
       <div className="flex flex-row items-start py-4 font-roboto leading-none gap-2">
-        <span className="text-[6rem] text-black">{data?.temperature2m}</span>
-        <span className="flex flex-col pt-2 text-[3rem] text-white">
-          &deg;C
-        </span>
+        {
+          loading ?
+            <div className="rounded-lg shadow h-24 w-48 bg-transparent backdrop-blur-md animate-pulse"/>
+          :<>
+            <span className="text-[6rem] text-black">{data?.temperature2m}</span>
+            <span className="flex flex-col pt-2 text-[3rem] text-white">
+              &deg;C
+            </span>
+          </>
+        }
       </div>
       <div className="flex flex-row pb-8 gap-2">
-        <span className="text-2xl text-black">{data?.day},</span>
-        <span className="text-2xl text-white">{data?.time}</span>
+        {
+          loading ?
+            <div className="rounded-lg shadow h-8 w-36 bg-transparent backdrop-blur-md animate-pulse"/>
+          :<>
+            <span className="text-2xl text-black">{data?.day},</span>
+            <span className="text-2xl text-white">{data?.time}</span>
+          </>
+        }
       </div>
       <div className="h-[1px] w-full bg-black-glass-2" />
       <div className="flex flex-col pt-8 gap-4">
-        <div className="flex flex-row gap-2 items-center">
-          <span className="text-2xl text-black">{data?.weatherString}</span>
-          <Image src={data?.icon} alt="Wind" width={24} height={24} className="w-12" />
-        </div>
+        {
+          loading ?
+            <div className="rounded-lg shadow h-8 w-48 bg-transparent backdrop-blur-md animate-pulse"/>
+          :<div className="flex flex-row gap-2 items-center">
+            <span className="text-2xl text-black">{data?.weatherString}</span>
+            <Image src={data?.icon} alt="Wind" width={24} height={24} className="w-12" />
+          </div>
+        }
       </div>
     </div>
   );

@@ -128,10 +128,11 @@ const fetchWeatherData = (
   unit: string,
   setWeekWeather: React.Dispatch<React.SetStateAction<IWeekWeather[] | null>>,
   setCurrentWeather: React.Dispatch<
-      React.SetStateAction<ICurrentWeather | null>
+    React.SetStateAction<ICurrentWeather | null>
   >,
   setTodayWeather: React.Dispatch<React.SetStateAction<ITodayWeather | null>>,
   setHourlyWeather: React.Dispatch<React.SetStateAction<IHourlyWeather[] | null>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const params = {
     latitude: location.latitude,
@@ -206,7 +207,7 @@ const fetchWeatherData = (
             minute: "2-digit",
             hour12: false,
           }),
-          icon: getWeatherIcon(current?.variables(1)?.value(), current?.variables(6)?.value()), 
+          icon: getWeatherIcon(current?.variables(1)?.value(), current?.variables(6)?.value()),
           weatherString: getString(current?.variables(6)?.value() ?? 0),
           temperature2m: current?.variables(0)?.value()?.toFixed(0) ?? "",
           isDay: current?.variables(1)?.value() ?? false,
@@ -300,13 +301,16 @@ const fetchWeatherData = (
       setCurrentWeather(weatherData.current as ICurrentWeather);
       setHourlyWeather(hourlyWeather as IHourlyWeather[]);
       setTodayWeather(todayWeather as ITodayWeather);
+      setIsLoading(false)
     } catch (error) {
       console.error("Error fetching weather data:", error);
+      setIsLoading(false)
     }
   };
 
   fetchWeatherData().catch((error) => {
     console.error("Error in fetchWeatherData:", error);
+    setIsLoading(false)
   });
 };
 
@@ -323,7 +327,9 @@ const WeatherApp = () => {
   );
   const [todayWeather, setTodayWeather] = useState<ITodayWeather | null>(null);
   const [hourlyWeather, setHourlyWeather] = useState<IHourlyWeather[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   useEffect(() => {
+    setIsLoading(true)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -331,7 +337,7 @@ const WeatherApp = () => {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           };
-            fetchWeatherData(location, unit, setWeekWeather, setCurrentWeather, setTodayWeather, setHourlyWeather);
+          fetchWeatherData(location, unit, setWeekWeather, setCurrentWeather, setTodayWeather, setHourlyWeather, setIsLoading);
         },
         (error) => {
           switch (error.code) {
@@ -347,29 +353,39 @@ const WeatherApp = () => {
             default:
               console.error("Geolocation error:", error.message);
           }
-          fetch("https://ipapi.co/json")
-            .then((res) => res.json())
-            .then((data: { latitude: number; longitude: number }) => {
-              if (
-                data &&
-                typeof data.latitude === "number" &&
-                typeof data.longitude === "number"
-              ) {
-                fetchWeatherData(
-                  { latitude: data.latitude, longitude: data.longitude },
-                  unit,
-                  setWeekWeather,
-                  setCurrentWeather,
-                  setTodayWeather,
-                  setHourlyWeather,
-                );
-              } else {
-
-                console.error("Invalid data from IP API");
-              }
+          fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+              console.log('Your Public IP Address:', data.ip);
+              fetch(`https://api.ipgeolocation.io/ipgeo?apiKey=444faae1a0c0442bb77a853241e3b4ca&ip=${data.ip}`)
+              .then((res) => res.json())
+              .then((data: { latitude: number; longitude: number }) => {
+                if (
+                  data &&
+                  typeof data.latitude === "number" &&
+                  typeof data.longitude === "number"
+                ) {
+                  fetchWeatherData(
+                    { latitude: data.latitude, longitude: data.longitude },
+                    unit,
+                    setWeekWeather,
+                    setCurrentWeather,
+                    setTodayWeather,
+                    setHourlyWeather,
+                    setIsLoading
+                  );
+                } else {
+                  setIsLoading(false)
+                  console.error("Invalid data from IP API");
+                }
+              })
+              .catch((error) => {
+                console.error("Error fetching location data:", error);
+                setIsLoading(false)
+              });
             })
-            .catch((error) => {
-              console.error("Error fetching location data:", error);
+            .catch(error => {
+              console.error('Error fetching IP:', error);
             });
         },
       );
@@ -378,8 +394,8 @@ const WeatherApp = () => {
 
   return (
     <>
-      <Sidebar data={currentWeather!} />
-      <div className="h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16">
+      <Sidebar data = {currentWeather!} loading= {isLoading}/>
+      <div className = "h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16" >
         <div className="flex flex-col">
           <Tabs.Root defaultValue="today">
             <div className="flex flex-row justify-between">
@@ -420,16 +436,16 @@ const WeatherApp = () => {
                 </Tabs.List>
               </Tabs.Root>
             </div>
-            <Tabs.Content className="" value="today">
-              {todayWeather && hourlyWeather && <TodayWeather todayWeather={todayWeather} hourlyWeather={hourlyWeather} unit={unit} />}
+            <Tabs.Content className="overflow-y-auto" value="today">
+              {todayWeather && hourlyWeather && <TodayWeather todayWeather={todayWeather} hourlyWeather={hourlyWeather} unit={unit} loading={isLoading} />}
             </Tabs.Content>
-            <Tabs.Content className="" value="week">
+            <Tabs.Content className="overflow-y-auto" value="week">
 
-              {weekWeather && <WeekWeather weekWeather={weekWeather} unit={unit}/>}
+              {weekWeather && <WeekWeather weekWeather={weekWeather} unit={unit} loading={isLoading} />}
             </Tabs.Content>
           </Tabs.Root>
         </div>
-      </div>
+      </div >
     </>
   );
 };

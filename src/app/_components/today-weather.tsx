@@ -23,10 +23,12 @@ const TodayWeather = ({
   todayWeather,
   hourlyWeather,
   unit,
+  loading
 }: {
   todayWeather: TodayWeather;
   hourlyWeather: HourlyWeather[];
   unit: string;
+  loading: boolean;
 }) => {
   return (
     <div className="flex flex-col gap-4 py-16">
