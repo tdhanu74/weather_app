@@ -357,32 +357,38 @@ const WeatherApp = () => {
             .then(response => response.json())
             .then((data: { ip: string }) => {
               console.log('Your Public IP Address:', data.ip);
-              fetch(`https://api.ip2location.io/?key=4E3A7670B309C1273FAEFA9D6AA40B92&ip=${data.ip}`)
-              .then((res) => res.json())
-              .then((data: { latitude: number; longitude: number }) => {
-                if (
-                  data &&
-                  typeof data.latitude === "number" &&
-                  typeof data.longitude === "number"
-                ) {
-                  fetchWeatherData(
-                    { latitude: data.latitude, longitude: data.longitude },
-                    unit,
-                    setWeekWeather,
-                    setCurrentWeather,
-                    setTodayWeather,
-                    setHourlyWeather,
-                    setIsLoading
-                  );
-                } else {
-                  setIsLoading(false)
-                  console.error("Invalid data from IP API");
+              fetch(`https://api.ip2location.io/?key=4E3A7670B309C1273FAEFA9D6AA40B92&ip=${data.ip}`, {
+                method: "GET",
+                mode: "cors",
+                headers: {
+                  'Access-Control-Allow-Origin': '*'
                 }
               })
-              .catch((error) => {
-                console.error("Error fetching location data:", error);
-                setIsLoading(false)
-              });
+                .then((res) => res.json())
+                .then((data: { latitude: number; longitude: number }) => {
+                  if (
+                    data &&
+                    typeof data.latitude === "number" &&
+                    typeof data.longitude === "number"
+                  ) {
+                    fetchWeatherData(
+                      { latitude: data.latitude, longitude: data.longitude },
+                      unit,
+                      setWeekWeather,
+                      setCurrentWeather,
+                      setTodayWeather,
+                      setHourlyWeather,
+                      setIsLoading
+                    );
+                  } else {
+                    setIsLoading(false)
+                    console.error("Invalid data from IP API");
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error fetching location data:", error);
+                  setIsLoading(false)
+                });
             })
             .catch(error => {
               console.error('Error fetching IP:', error);
@@ -394,8 +400,8 @@ const WeatherApp = () => {
 
   return (
     <>
-      <Sidebar data = {currentWeather!} loading= {isLoading}/>
-      <div className = "h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16" >
+      <Sidebar data={currentWeather!} loading={isLoading} />
+      <div className="h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16" >
         <div className="flex flex-col">
           <Tabs.Root defaultValue="today">
             <div className="flex flex-row justify-between">
