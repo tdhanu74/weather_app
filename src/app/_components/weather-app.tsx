@@ -353,45 +353,31 @@ const WeatherApp = () => {
             default:
               console.error("Geolocation error:", error.message);
           }
-          fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then((data: { ip: string }) => {
-              console.log('Your Public IP Address:', data.ip);
-              fetch(`https://api.ip2location.io/?key=4E3A7670B309C1273FAEFA9D6AA40B92&ip=${data.ip}`, {
-                method: "GET",
-                mode: "cors",
-                headers: {
-                  'Access-Control-Allow-Origin': '*'
-                }
-              })
-                .then((res) => res.json())
-                .then((data: { latitude: number; longitude: number }) => {
-                  if (
-                    data &&
-                    typeof data.latitude === "number" &&
-                    typeof data.longitude === "number"
-                  ) {
-                    fetchWeatherData(
-                      { latitude: data.latitude, longitude: data.longitude },
-                      unit,
-                      setWeekWeather,
-                      setCurrentWeather,
-                      setTodayWeather,
-                      setHourlyWeather,
-                      setIsLoading
-                    );
-                  } else {
-                    setIsLoading(false)
-                    console.error("Invalid data from IP API");
-                  }
-                })
-                .catch((error) => {
-                  console.error("Error fetching location data:", error);
-                  setIsLoading(false)
-                });
+          fetch(`https://ipapi.co/json/`)
+            .then((res) => { console.log(res); return res.json() })
+            .then((data: { latitude: number; longitude: number }) => {
+              if (
+                data &&
+                typeof data.latitude === "number" &&
+                typeof data.longitude === "number"
+              ) {
+                fetchWeatherData(
+                  { latitude: data.latitude, longitude: data.longitude },
+                  unit,
+                  setWeekWeather,
+                  setCurrentWeather,
+                  setTodayWeather,
+                  setHourlyWeather,
+                  setIsLoading
+                );
+              } else {
+                setIsLoading(false)
+                console.error("Invalid data from IP API");
+              }
             })
-            .catch(error => {
-              console.error('Error fetching IP:', error);
+            .catch((error) => {
+              console.error("Error fetching location data:", error);
+              setIsLoading(false)
             });
         },
       );
