@@ -13,6 +13,8 @@ interface SidebarProps {
     icon: string;
   };
   loading: boolean;
+  unit: string;
+  location: string;
 }
 
 const iconMap = {
@@ -51,7 +53,7 @@ const getIcon = (weatherCode: number | undefined, isDay = true) => {
 };
 
 
-export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
+export default function Sidebar({ data, loading, unit, location }: Readonly<SidebarProps>) {
   // const [searchText, setSearchText] = useState<string>("Search for places...");
   return (
     <div className="flex h-full flex-col py-16 pl-16 sm:w-6/12 md:w-5/12 lg:w-4/12">
@@ -95,7 +97,7 @@ export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
           :<>
             <span className="text-[6rem] text-black">{data?.temperature2m}</span>
             <span className="flex flex-col pt-2 text-[3rem] text-white">
-              &deg;C
+              &deg;{unit === 'celsius' ? "C": "F"}
             </span>
           </>
         }
@@ -114,10 +116,18 @@ export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
       <div className="flex flex-col pt-8 gap-4">
         {
           loading ?
-            <div className="rounded-lg shadow h-8 w-48 bg-transparent backdrop-blur-md animate-pulse"/>
+            <div className="rounded-lg shadow h-10 w-48 bg-transparent backdrop-blur-md animate-pulse"/>
           :<div className="flex flex-row gap-2 items-center">
-            <span className="text-2xl text-black">{data?.weatherString}</span>
             <Image src={data?.icon} alt="Wind" width={24} height={24} className="w-12" />
+            <span className="text-2xl text-black">{data?.weatherString}</span>
+          </div>
+        }
+        {
+          loading ?
+            <div className="rounded-lg shadow h-10 w-48 bg-transparent backdrop-blur-md animate-pulse"/>
+          :<div className="flex flex-row gap-2 items-center">
+            <Image src="/icons/location.svg" alt="location" width={16} height={16} className="w-8" />
+            <span className="text-lg text-black">{location}</span>
           </div>
         }
       </div>

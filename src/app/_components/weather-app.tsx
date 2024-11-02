@@ -136,7 +136,6 @@ const fetchWeatherData = (
 ) => {
   const params = {
     latitude: location.latitude,
-
     longitude: location.longitude,
     current: [
       "temperature_2m",
@@ -170,7 +169,6 @@ const fetchWeatherData = (
       "uv_index_max",
     ],
     temperature_unit: unit,
-    wind_speed_unit: "ms",
   };
   const url = "https://api.open-meteo.com/v1/forecast";
 
@@ -251,8 +249,6 @@ const fetchWeatherData = (
         },
       };
 
-      console.log(weatherData)
-
       const getDayName = (index: number, date: Date) => {
         if (index === 0) return "Today";
         if (index === 1) return "Tomorrow";
@@ -328,6 +324,7 @@ const WeatherApp = () => {
   const [todayWeather, setTodayWeather] = useState<ITodayWeather | null>(null);
   const [hourlyWeather, setHourlyWeather] = useState<IHourlyWeather[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [location, setLocation] = useState<string>("");
   useEffect(() => {
     setIsLoading(true)
     if (navigator.geolocation) {
@@ -355,12 +352,13 @@ const WeatherApp = () => {
           }
           fetch(`https://ipapi.co/json/`)
             .then((res) => { console.log(res); return res.json() })
-            .then((data: { latitude: number; longitude: number }) => {
+            .then((data: { latitude: number; longitude: number; city: string; region: string; country_name: string; }) => {
               if (
                 data &&
                 typeof data.latitude === "number" &&
                 typeof data.longitude === "number"
               ) {
+                setLocation(data.city +", "+ data.region +", "+ data.country_name)
                 fetchWeatherData(
                   { latitude: data.latitude, longitude: data.longitude },
                   unit,
@@ -386,7 +384,7 @@ const WeatherApp = () => {
 
   return (
     <>
-      <Sidebar data={currentWeather!} loading={isLoading} />
+      <Sidebar data={currentWeather!} loading={isLoading} unit={unit} location={location} />
       <div className="h-full w-full overflow-y-auto py-16 sm:px-12 md:px-14 lg:px-16" >
         <div className="flex flex-col">
           <Tabs.Root defaultValue="today">
@@ -429,11 +427,10 @@ const WeatherApp = () => {
               </Tabs.Root>
             </div>
             <Tabs.Content className="overflow-y-auto" value="today">
-              {todayWeather && hourlyWeather && <TodayWeather todayWeather={todayWeather} hourlyWeather={hourlyWeather} unit={unit} loading={isLoading} />}
+              <TodayWeather todayWeather={todayWeather} hourlyWeather={hourlyWeather} unit={unit} loading={isLoading} />
             </Tabs.Content>
             <Tabs.Content className="overflow-y-auto" value="week">
-
-              {weekWeather && <WeekWeather weekWeather={weekWeather} unit={unit} loading={isLoading} />}
+              <WeekWeather weekWeather={weekWeather} unit={unit} loading={isLoading} />
             </Tabs.Content>
           </Tabs.Root>
         </div>
