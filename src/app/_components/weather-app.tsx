@@ -1,10 +1,60 @@
 "use client";
 import Sidebar from "./sidebar";
 import * as Tabs from "@radix-ui/react-tabs";
-import Weather from "./weather";
+// import Weather from "./weather";
 import React, { useEffect, useState } from "react";
-import SidebarContent from "../_types/SidebarContent";
-import Content from "../_types/Content";
+import type SidebarContent from "../_types/SidebarContent";
+// import Content from "../_types/Content";
+
+type WeatherContent = {
+  weather: {
+    main: string,
+    description: string,
+    icon: string
+  }[],
+  main: {
+    temp: number,
+    feels_like: number,
+    temp_min: number,
+    temp_max: number,
+    pressure: number,
+    humidity: number
+  },
+  wind: {
+    speed: number,
+    deg: number,
+    gust: number
+  },
+  sys: {
+    country: string,
+    sunrise: string,
+    sunset: string
+  },
+  name: string
+}
+
+type ForecastContent = {
+  list: {
+    main: {
+      temp: number,
+      feels_like: number,
+      temp_min: number,
+      temp_max: number
+    },
+    weather: {
+      main: string,
+      description: string,
+      icon: string
+    }[],
+    dt_txt: string
+  }[]
+}
+
+type CountryContent = {
+  name: {
+    common: string
+  }
+}
 
 const fetchWeatherData = async (
   location: { latitude: number; longitude: number },
@@ -21,38 +71,43 @@ const fetchWeatherData = async (
 
     const weather = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=2d69f484dc9a594267d35f54b254393d&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
       res.json(),
-    )
+    ) as WeatherContent
 
-    const forecast = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=2d69f484dc9a594267d35f54b254393d&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
+    const forecast: ForecastContent = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=2d69f484dc9a594267d35f54b254393d&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
       res.json(),
-    )
+    ) as ForecastContent
 
     const country = await fetch(`https://restcountries.com/v3.1/alpha/${weather.sys.country}`).then((res) =>
       res.json(),
-    )
+    ) as CountryContent[];
 
     const sideBarContent: SidebarContent = {
       temperature: weather.main.temp,
       feels_like: weather.main.feels_like,
-      description: weather.weather[0].description,
-      icon: weather.weather[0].icon,
+      description: weather.weather[0]?.description ?? "",
+      icon: weather.weather[0]?.icon ?? "",
       city: weather.name,
-      country: weather.sys.country,
+      country: country[0]?.name.common ?? "",
       unit: unit
     }
 
     setSidebarContent(sideBarContent)
 
-    const weekdata:any = {}
+    const weekdata: Record<string, {
+      weather: string,
+      temp: number,
+      temp_min: number,
+      temp_max: number
+    }> = {}
     const today = (new Date()).toISOString().split("T")[0]
-    for (let data of forecast.list) {
-      if (data.dt_txt.split()[0] !== today) {
-        const day: string = getDayName(new Date(data.dt_txt.split()[0]))
+    for (const data of forecast.list) {
+      const day: string = getDayName(new Date(data.dt_txt.split(" ")[0] ?? ""))
+      if (day !== today) {
         weekdata[day] = {
-          weather: data.weather[0].main,
-          temp: (weekdata[day]?.temp + data.main.temp)/2,
-          temp_min: Math.min(weekdata[day]?.temp_min, data.main.temp_min),
-          temp_max: Math.max(weekdata[day]?.temp_max, data.main.temp_max)
+          weather: data.weather[0]?.main ?? "",
+          temp: (weekdata[day]?.temp ?? 0 + data.main.temp)/2,
+          temp_min: Math.min(weekdata[day]?.temp_min ?? 0, data.main.temp_min),
+          temp_max: Math.max(weekdata[day]?.temp_max ?? 0, data.main.temp_max)
         }
       }
     }
@@ -69,68 +124,14 @@ const WeatherApp = () => {
   const [sidebarContent, setSidebarContent] = useState<SidebarContent | null>(
     null,
   );
-  const [content, setContent] = useState<Content | null>(
-    null,
-  );
+  // const [content, setContent] = useState<Content | null>(
+  //   null,
+  // );
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [location, setLocation] = useState<string>("");
-
-  const getWeatherData = async () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location: { latitude: number; longitude: number } = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-          fetchWeatherData(location, unit, setIsLoading, setSidebarContent);
-        },
-        async (error) => {
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              console.error("Geolocation error: Permission denied");
-              break;
-            case error.POSITION_UNAVAILABLE:
-              console.error("Geolocation error: Position unavailable");
-              break;
-            case error.TIMEOUT:
-              console.error("Geolocation error: Request timed out");
-              break;
-            default:
-              console.error("Geolocation error:", error.message);
-          }
-          const location = await getLocationForWeatherApi();
-          console.log(location)
-          if (location.latitude && location.longitude) {
-            fetchWeatherData(
-              location as { latitude: number, longitude: number },
-              unit,
-              setIsLoading,
-              setSidebarContent
-            );
-          } else {
-            console.error("Error while fetching location to get the weather")
-          }
-        },
-      );
-    } else {
-      const location = await getLocationForWeatherApi();
-      console.log(location)
-      if (location.latitude && location.longitude) {
-        fetchWeatherData(
-          location as { latitude: number, longitude: number },
-          unit,
-          setIsLoading,
-          setSidebarContent
-        );
-      } else {
-        console.error("Error while fetching location to get the weather")
-      }
-    }
-  }
+  const [, setLocation] = useState<string>("");
 
   const getLocationForWeatherApi = async () => {
-    let location: { longitude?: number, latitude?: number } = {}
+    const location: { longitude?: number, latitude?: number } = {}
     await fetch(`https://ipapi.co/json/`)
       .then((res) => { return res.json() })
       .then((data: { latitude: number; longitude: number; city: string; region: string; country_name: string; }) => {
@@ -155,8 +156,63 @@ const WeatherApp = () => {
   }
 
   useEffect(() => {
+    const getWeatherData = async () => {
+      let locationError = false
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const location: { latitude: number; longitude: number } = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+            fetchWeatherData(location, unit, setIsLoading, setSidebarContent).catch((e:Error) => { console.error(e)});
+          },
+          (error) => {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                console.error("Geolocation error: Permission denied");
+                break;
+              case error.POSITION_UNAVAILABLE:
+                console.error("Geolocation error: Position unavailable");
+                break;
+              case error.TIMEOUT:
+                console.error("Geolocation error: Request timed out");
+                break;
+              default:
+                console.error("Geolocation error:", error.message);
+            }
+            locationError = true
+          },
+        );
+      } else {
+        const location = await getLocationForWeatherApi();
+        if (location.latitude && location.longitude) {
+          fetchWeatherData(
+            location as { latitude: number, longitude: number },
+            unit,
+            setIsLoading,
+            setSidebarContent
+          ).catch((e:Error) => { console.error(e)});
+        } else {
+          console.error("Error while fetching location to get the weather")
+        }
+      }
+      if (locationError) {
+        const location = await getLocationForWeatherApi().catch((e:Error) => { console.error(e)});
+        if (location?.latitude && location?.longitude) {
+          fetchWeatherData(
+            location as { latitude: number, longitude: number },
+            unit,
+            setIsLoading,
+            setSidebarContent
+          ).catch((e:Error) => { console.error(e)});
+        } else {
+          console.error("Error while fetching location to get the weather")
+        }
+      }
+    }
     setIsLoading(true)
-    getWeatherData()
+    getWeatherData().catch((e:Error) => { console.error(e)})
   }, [unit]);
 
   return (

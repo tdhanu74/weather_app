@@ -1,7 +1,6 @@
 "use client";
-// import { useState } from "react";
 import Image from "next/image";
-import SidebarContent from "../_types/SidebarContent";
+import type SidebarContent from "../_types/SidebarContent";
 
 interface SidebarProps {
   data: SidebarContent;

@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import HighlightCard from "./highlight-card";
+// import { useEffect } from "react";
+// import HighlightCard from "./highlight-card";
 import Image from "next/image";
 
 interface TodayWeather {
