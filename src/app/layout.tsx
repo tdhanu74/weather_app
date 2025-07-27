@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 
+import { Analytics } from "@vercel/analytics/next"
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
@@ -14,6 +15,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <Analytics />
       <body className="h-screen w-screen">
         {children}
       </body>

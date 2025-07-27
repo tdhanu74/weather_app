@@ -9,19 +9,19 @@ interface SidebarProps {
 
 export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
   return (
-    <div className="flex h-full flex-col py-16 pl-16 sm:w-6/12 md:w-5/12 lg:w-4/12">
-      <div className={loading ? "self-start w-full" : "self-center"}>
-        {/* {
+    <div className="flex h-full flex-col py-16 pl-24 sm:w-6/12 md:w-5/12 lg:w-4/12">
+      <div className={loading ? "self-start w-full" : "self-start"}>
+        {
           loading ?
             <div className="rounded-lg shadow w-full h-72 bg-transparent backdrop-blur-md animate-pulse"/>
           :<Image 
-            src={getIcon(data?.weatherCode, data?.isDay)} 
+            src={data.icon} 
             alt="Haze Day" 
             className="w-72" 
             width={24} 
             height={24} 
           />
-        } */}
+        }
       </div>
       <div className="flex flex-row items-start py-4 font-roboto leading-none gap-2">
         {
@@ -45,7 +45,7 @@ export default function Sidebar({ data, loading }: Readonly<SidebarProps>) {
           </>
         }
       </div>
-      <div className="h-[1px] w-full bg-black-glass-2" />
+      {/* <div className="h-[1px] w-full bg-black-glass-2" /> */}
       <div className="flex flex-col pt-8 gap-4">
         {
           loading ?
