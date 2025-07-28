@@ -101,11 +101,11 @@ const fetchWeatherData = async (
 
   try {
 
-    const weather = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=${process.env.WEATHER_API_KEY}&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
+    const weather = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
       res.json(),
     ) as WeatherContent
 
-    const forecast: ForecastContent = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=${process.env.WEATHER_API_KEY}&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
+    const forecast: ForecastContent = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${location.latitude}&lon=${location.longitude}&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&units=${unit === "celsius"? "metric": "imperial"}`).then((res) =>
       res.json(),
     ) as ForecastContent
 

@@ -16,7 +16,7 @@ export default function WeatherCard({
   unit
 }: Readonly<WeatherCardProps>) {
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden rounded-xl bg-transparent shadow backdrop-blur-md p-4">
+    <div className="flex flex-col h-full w-full overflow-hidden rounded-xl bg-white-glass-2 shadow backdrop-blur-md p-4">
       <div className="flex justify-center items-center text-[1.5rem]">
         {day}
       </div>
